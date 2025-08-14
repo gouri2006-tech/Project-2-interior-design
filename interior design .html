@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Linea Studio — Interior Design</title>
+  <meta name="description" content="Linea Studio — Modern interior design, portfolio, services and client testimonials." />
+  <style>
+  /* --------------------------------------------
+     Linea Studio — Single-file multi-section site
+     - Neutral palette with a bold accent (#197278)
+     - CSS Grid masonry-like portfolio
+     - Checkbox filter (CSS-only)
+     - Testimonials carousel (CSS animation)
+     - Before/After slider (CSS-only)
+     ---------------------------------------------*/
+  :root{
+    --bg:#f6f5f3;          /* neutral background */
+    --card:#ffffff;        /* card background */
+    --muted:#7a7a7a;       /* muted text */
+    --accent:#197278;      /* bold teal accent */
+    --radius:12px;
+    --maxw:1150px;
+    --ff-sans: Inter, 'Segoe UI', Roboto, system-ui, -apple-system;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:var(--ff-sans);
+    background:linear-gradient(180deg,var(--bg),#efeeed 60%);
+    color:#111;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+  a{color:inherit;text-decoration:none}
+  /* ---------- container ---------- */
+  .wrap{max-width:var(--maxw);margin:32px auto;padding:0 20px}
+
+  /* ---------- header / nav ---------- */
+  header{
+    display:flex;align-items:center;gap:20px;justify-content:space-between;margin-bottom:22px;
+  }
+  .brand{display:flex;gap:14px;align-items:center}
+  .logo{
+    width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#2e8b88);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:20px;box-shadow:0 6px 18px rgba(25,114,120,0.18)
+  }
+  h1{font-size:1.2rem;margin:0}
+  .tag{color:var(--muted);font-size:0.95rem}
+  nav{display:flex;gap:12px;align-items:center}
+  nav a{padding:10px 14px;border-radius:10px;color:var(--muted);font-weight:600}
+  nav a:hover{background:rgba(25,114,120,0.06);color:var(--accent)}
+  .cta{background:var(--accent);color:white;padding:10px 14px;border-radius:10px;font-weight:700}
+
+  /* ---------- hero ---------- */
+  .hero{display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:center;margin-bottom:28px}
+  .hero-card{background:var(--card);padding:28px;border-radius:var(--radius);box-shadow:0 10px 30px rgba(16,24,32,0.06)}
+  .hero h2{margin:0 0 8px;font-size:1.8rem}
+  .hero p{color:var(--muted);line-height:1.6}
+  .hero-visual{height:360px;border-radius:var(--radius);overflow:hidden;background:linear-gradient(180deg,#ddd,#ccc);box-shadow:inset 0 -60px 120px rgba(0,0,0,0.05)}
+  .hero-visual img{width:100%;height:100%;object-fit:cover;display:block}
+
+  /* ---------- services ---------- */
+  .services{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin:28px 0}
+  .service{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 8px 20px rgba(16,24,32,0.04)}
+  .service h3{margin:0 0 8px}
+  .service p{margin:0;color:var(--muted);font-size:0.95rem}
+
+  /* ---------- portfolio controls ---------- */
+  .controls{display:flex;gap:12px;align-items:center;margin:18px 0}
+  /* checkbox hack inputs invisible but accessible */
+  .filters input{display:none}
+  .filters label{padding:8px 12px;border-radius:999px;background:#fff;border:1px solid #eee;color:var(--muted);cursor:pointer;font-weight:600}
+  .filters label:hover{box-shadow:0 8px 24px rgba(20,20,20,0.04)}
+  /* when input checked -> style */
+  .filters input:checked + label{background:var(--accent);color:white;border-color:var(--accent)}
+
+  /* Clear / show all button */
+  .clear{margin-left:auto;background:transparent;border:none;color:var(--muted);cursor:pointer;font-weight:700}
+
+  /* ---------- portfolio masonry-like grid ---------- */
+  .portfolio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:start}
+  /* responsive */
+  @media (max-width:980px){.hero{grid-template-columns:1fr;}.portfolio-grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:640px){.portfolio-grid{grid-template-columns:1fr}}
+
+  .project{background:var(--card);border-radius:12px;overflow:hidden;position:relative;box-shadow:0 12px 30px rgba(16,24,32,0.06)}
+  .project img{width:100%;height:220px;object-fit:cover;display:block}
+  .proj-meta{padding:12px}
+  .proj-meta h4{margin:0 0 6px;font-size:1rem}
+  .proj-meta p{margin:0;color:var(--muted);font-size:0.9rem}
+
+  /* simulate masonry by varying row spans */
+  .tall img{height:360px}
+  .short img{height:180px}
+
+  /* ---------- CSS-only filter behavior ----------
+     We'll use the checkbox hack to toggle classes via general sibling selector.
+     Each checkbox controls hiding non-matching items by applying a 'hide' selector.
+     Because CSS can't add/remove classes, we craft selectors that target .project
+     when a filter is checked, we hide projects that DON'T match by targeting their data- attributes.
+  */
+  /* default show all */
+  /* When 'residential' checkbox checked, hide projects that are NOT [data-cat~="residential"] */
+  #f-residential:checked ~ .portfolio-wrap .portfolio-grid .project:not([data-cat~="residential"]) {opacity:0.06;transform:scale(0.98);filter:grayscale(60%);pointer-events:none}
+  #f-commercial:checked ~ .portfolio-wrap .portfolio-grid .project:not([data-cat~="commercial"]) {opacity:0.06;transform:scale(0.98);filter:grayscale(60%);pointer-events:none}
+  #f-hospitality:checked ~ .portfolio-wrap .portfolio-grid .project:not([data-cat~="hospitality"]) {opacity:0.06;transform:scale(0.98);filter:grayscale(60%);pointer-events:none}
+  /* multiple checked: combine via :not(:matches(...)) not widely supported; we keep UX so single filters are primary */
+
+  /* ---------- testimonials carousel (CSS animation) ---------- */
+  .testimonials{margin:28px 0;background:linear-gradient(180deg,rgba(25,114,120,0.04),transparent);padding:22px;border-radius:12px}
+  .slides{position:relative;overflow:hidden;height:160px}
+  .slide-list{display:flex;width:400%;height:100%;animation:slideAnim 18s linear infinite}
+  .slide{flex:0 0 100%;padding:12px}
+  .quote{font-style:italic;color:var(--muted);}
+  .author{margin-top:12px;font-weight:700;color:#111}
+  @keyframes slideAnim{
+    0%{transform:translateX(0)}
+    20%{transform:translateX(0)}
+    25%{transform:translateX(-100%)}
+    45%{transform:translateX(-100%)}
+    50%{transform:translateX(-200%)}
+    70%{transform:translateX(-200%)}
+    75%{transform:translateX(-300%)}
+    95%{transform:translateX(-300%)}
+    100%{transform:translateX(0)}
+  }
+
+  /* ---------- before/after slider (CSS-only) ---------- */
+  .ba-wrap{position:relative;border-radius:12px;overflow:hidden;margin-top:18px}
+  .ba-wrap img{width:100%;display:block}
+  .ba-handle{position:absolute;top:0;left:50%;width:3px;height:100%;background:rgba(255,255,255,0.7);mix-blend-mode:overlay}
+  .ba-overlay{position:absolute;top:0;left:0;bottom:0;overflow:hidden;width:50%}
+  .ba-overlay img{display:block;width:100%;height:100%;object-fit:cover}
+  /* pseudo-range using checkbox + label isn't smooth; we provide a clickable toggle that swaps halves */
+  .ba-toggle{display:flex;gap:8px;margin-top:8px}
+  .ba-toggle input{display:none}
+  .ba-toggle label{padding:8px 12px;border-radius:8px;background:#fff;border:1px solid #eee;cursor:pointer}
+  #ba-after:checked ~ .ba-wrap .ba-overlay{width:100%}
+
+  /* ---------- footer ---------- */
+  footer{margin:40px 0 80px;text-align:center;color:var(--muted);font-size:0.95rem}
+
+  /* small utilities */
+  .muted{color:var(--muted)}
+  .section-title{display:flex;align-items:center;gap:12px;margin:6px 0 12px}
+  .section-title h3{margin:0}
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">LS</div>
+        <div>
+          <h1>Linea Studio</h1>
+          <div class="tag">Thoughtful spaces — crafted details</div>
+        </div>
+      </div>
+      <nav>
+        <a href="#home">Home</a>
+        <a href="#services">Services</a>
+        <a href="#portfolio">Portfolio</a>
+        <a href="#testimonials">Testimonials</a>
+        <a class="cta" href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <!-- HERO / HOME -->
+    <section id="home" class="hero">
+      <div class="hero-card">
+        <h2>We design interiors that tell a story.</h2>
+        <p class="muted">Linea Studio partners with homeowners and businesses to create refined, functional spaces. We blend architecture, materiality and bespoke furnishings to deliver interiors that feel personal and timeless.</p>
+        <div style="margin-top:18px;display:flex;gap:12px;align-items:center">
+          <a href="#portfolio" class="cta">Explore Portfolio</a>
+          <a href="#services" style="padding:10px 14px;border-radius:10px;background:#fff;border:1px solid #eee;font-weight:700">Our Services</a>
+        </div>
+
+        <div style="margin-top:18px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+          <div style="background:#fff;padding:10px;border-radius:10px;box-shadow:0 8px 20px rgba(16,24,32,0.04)">
+            <strong>Established</strong>
+            <div class="muted">2014</div>
+          </div>
+          <div style="background:#fff;padding:10px;border-radius:10px;box-shadow:0 8px 20px rgba(16,24,32,0.04)">
+            <strong>Projects</strong>
+            <div class="muted">120+</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <img src="https://images.unsplash.com/photo-1507052041454-7769de2e6bff" alt="Interior hero">
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services">
+      <div class="section-title"><h3>Services</h3><div class="muted">Tailored to your project</div></div>
+      <div class="services">
+        <div class="service"><h3>Residential Design</h3><p>Full home renovations, turnkey interior packages and bespoke furniture design.</p></div>
+        <div class="service"><h3>Commercial Design</h3><p>Office fit-outs, hospitality and retail spaces focused on brand and function.</p></div>
+        <div class="service"><h3>Consultation & Styling</h3><p>Day rates for on-site consultation, styling sessions and sourcing.</p></div>
+        <div class="service"><h3>Project Management</h3><p>End-to-end coordination with contractors, procurement and quality control.</p></div>
+      </div>
+    </section>
+
+    <!-- PORTFOLIO + FILTERS -->
+    <section id="portfolio" class="portfolio-wrap">
+      <div class="section-title"><h3>Portfolio</h3><div class="muted">Selected projects</div></div>
+
+      <div class="controls">
+        <!-- filters (checkbox hack) -->
+        <div class="filters">
+          <input type="checkbox" id="f-residential" name="filter">
+          <label for="f-residential">Residential</label>
+
+          <input type="checkbox" id="f-commercial" name="filter">
+          <label for="f-commercial">Commercial</label>
+
+          <input type="checkbox" id="f-hospitality" name="filter">
+          <label for="f-hospitality">Hospitality</label>
+        </div>
+        <button class="clear" onclick="document.getElementById('f-residential').checked=false;document.getElementById('f-commercial').checked=false;document.getElementById('f-hospitality').checked=false">Clear</button>
+      </div>
+
+      <div class="portfolio-grid">
+        <!-- Project items: add data-cat tags for CSS targeting -->
+        <article class="project tall" data-cat="residential">
+          <img src="https://images.unsplash.com/photo-1499951360447-b19be8fe80f5" alt="modern living room">
+          <div class="proj-meta"><h4>Riverside Residence</h4><p class="muted">Full interior revamp — neutral palette, warm oak finishes.</p></div>
+        </article>
+
+        <article class="project short" data-cat="commercial">
+          <img src="https://images.unsplash.com/photo-1505691723518-36a3b0d8f0f1" alt="office space">
+          <div class="proj-meta"><h4>Bespoke Co-working</h4><p class="muted">Flexible workplace design with meeting hubs.</p></div>
+        </article>
+
+        <article class="project tall" data-cat="hospitality">
+          <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836" alt="boutique hotel lobby">
+          <div class="proj-meta"><h4>Harbor Hotel Lobby</h4><p class="muted">Lobby renovation to elevate guest arrival experience.</p></div>
+        </article>
+
+        <article class="project short" data-cat="residential">
+          <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36" alt="kitchen">
+          <div class="proj-meta"><h4>City Loft Kitchen</h4><p class="muted">Minimalist kitchen with integrated appliances.</p></div>
+        </article>
+
+        <article class="project short" data-cat="commercial">
+          <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36" alt="retail interior">
+          <div class="proj-meta"><h4>Flagship Retail</h4><p class="muted">Brand-driven retail space design and fixtures.</p></div>
+        </article>
+
+        <article class="project tall" data-cat="residential">
+          <img src="https://images.unsplash.com/photo-1540574163026-643ea20ade25" alt="bedroom">
+          <div class="proj-meta"><h4>Seaside Bedroom</h4><p class="muted">Soft textures, layered lighting and built-in storage.</p></div>
+        </article>
+
+      </div>
+
+      <!-- before / after example -->
+      <div style="margin-top:20px">
+        <div class="section-title"><h3>Before & After</h3><div class="muted">Swipe to compare</div></div>
+        <div style="display:flex;gap:18px;flex-direction:column">
+          <div style="display:flex;gap:18px;flex-wrap:wrap">
+            <div style="flex:1;min-width:320px" >
+              <div class="ba-toggle">
+                <input type="radio" id="ba-before" name="ba" checked>
+                <label for="ba-before">Before</label>
+                <input type="radio" id="ba-after" name="ba">
+                <label for="ba-after">After</label>
+              </div>
+              <div class="ba-wrap">
+                <img src="https://images.unsplash.com/photo-1493666438817-866a91353ca9" alt="before">
+                <div class="ba-overlay"><img src="https://images.unsplash.com/photo-1505691723518-36a3b0d8f0f1" alt="after"></div>
+                <div class="ba-handle"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section id="testimonials" class="testimonials">
+      <div class="section-title"><h3>What clients say</h3><div class="muted">Selected testimonials</div></div>
+      <div class="slides">
+        <div class="slide-list">
+          <div class="slide">
+            <div class="quote">"Linea transformed our home into a quiet sanctuary. Their attention to material and light was remarkable."</div>
+            <div class="author">— A. Mehta, Homeowner</div>
+          </div>
+          <div class="slide">
+            <div class="quote">"Our café's redesign increased footfall and dwell time. The team understood our brand instantly."</div>
+            <div class="author">— R. Kapoor, Founder</div>
+          </div>
+          <div class="slide">
+            <div class="quote">"Professional, timely and creative — a pleasure to work with across a commercial fit-out."</div>
+            <div class="author">— M. Jones, Developer</div>
+          </div>
+          <div class="slide">
+            <div class="quote">"They made the renovation painless and the results beautiful."</div>
+            <div class="author">— S. Patel, Homeowner</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT / FOOTER -->
+    <section id="contact" style="margin-top:28px;background:var(--card);padding:18px;border-radius:12px;box-shadow:0 8px 30px rgba(16,24,32,0.04)">
+      <div style="display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+        <div>
+          <h3 style="margin:0">Work with us</h3>
+          <div class="muted">Tell us about your project and we'll be in touch.</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <a class="cta" href="mailto:hello@lineastudio.com">hello@lineastudio.com</a>
+          <a href="#" style="padding:10px 14px;border-radius:10px;background:#fff;border:1px solid #eee;font-weight:700">Request Brochure</a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      © Linea Studio • Crafted interiors • 2014 — 2025
+    </footer>
+  </div>
+</body>
+</html>
